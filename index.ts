@@ -11,11 +11,13 @@ wss.on('connection', (ws) => {
   ws.on('error', console.error);
 
   ws.on('message', (data) => {
-    const response = wsMessageHandler(data.toString());
-    if (!response) return;
+    const responses = wsMessageHandler(data.toString());
+    if (!responses?.length) return;
 
-    console.log(`Response to the message type "${response.type}" with result "${response.data}"`);
-    ws.send(JSON.stringify(response));
+    responses.forEach(response => {
+      console.log(`Response to the message type "${response.type}" with result "${response.data}"`);
+      ws.send(JSON.stringify(response));
+    });
   });
 });
 
