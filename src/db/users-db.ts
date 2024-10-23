@@ -1,18 +1,15 @@
 import { User } from '../models/user';
 
-const users: User[] = [];
+const users: Record<string, User> = {};
 
 export const usersDb = {
   addUser: (user: User) => {
-    users.push(user);
+    users[user.id] = user;
   },
   getUser: (id: number): User | null => {
-    return users.find((user) => user.id === id) ?? null;
+    return users[id] ?? null;
   },
   getUsers: (): User[] => {
-    return users;
-  },
-  getIndex: (): number => {
-    return users.length;
+    return Object.values(users);
   },
 };

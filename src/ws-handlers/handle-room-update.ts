@@ -4,5 +4,5 @@ import { roomsDb } from '../db/rooms-db';
 import { Room } from '../models/room';
 
 export const handleRoomUpdate = (): WsMessage => {
-  return getWsResponse<Room[]>(WsMessageType.UPDATE_ROOM, roomsDb.getRoomsWithOnePlayer());
+  return getWsResponse<Room[]>(WsMessageType.UPDATE_ROOM, roomsDb.getRooms());
 };

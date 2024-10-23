@@ -15,12 +15,12 @@ export const handleRegistration = (message: string): WsMessage => {
       errorText: 'Name or password is empty',
     });
   }
-
+  const id = Date.now()
   const newUser = {
     name,
     password,
-    id: Date.now(),
-    index: usersDb.getIndex(),
+    id,
+    index: id,
   };
 
   usersDb.addUser(newUser);
