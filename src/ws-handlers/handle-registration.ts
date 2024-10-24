@@ -1,6 +1,7 @@
 import { RegistrationResData, WsMessage, WsMessageType } from '../models/ws-messages';
 import { getWsResponse } from '../helpers/get-ws-response';
 import { usersDb } from '../db/users-db';
+import { generateId } from '../helpers/generate-id';
 
 const getRegistrationResponse = (data: RegistrationResData): WsMessage => getWsResponse(WsMessageType.REGISTRATION, data);
 
@@ -15,7 +16,7 @@ export const handleRegistration = (message: string): WsMessage => {
       errorText: 'Name or password is empty',
     });
   }
-  const id = Date.now()
+  const id = generateId();
   const newUser = {
     name,
     password,

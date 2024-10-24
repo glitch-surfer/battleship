@@ -1,0 +1,1 @@
+export const generateId = (): string => Date.now().toString() + Math.random().toString();
