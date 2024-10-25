@@ -2,10 +2,12 @@ import { RegistrationResData, WsMessage, WsMessageType } from '../models/ws-mess
 import { getWsResponse } from '../helpers/get-ws-response';
 import { usersDb } from '../db/users-db';
 import { generateId } from '../helpers/generate-id';
+import { socketsDb } from '../db/sockets-db';
+import { WebSocket } from 'ws';
 
 const getRegistrationResponse = (data: RegistrationResData): WsMessage => getWsResponse(WsMessageType.REGISTRATION, data);
 
-export const handleRegistration = (message: string): WsMessage => {
+export const handleRegistration = (message: string, ws: WebSocket): WsMessage => {
   const { name, password } = JSON.parse(message);
 
   if (!name || !password) {
@@ -24,6 +26,7 @@ export const handleRegistration = (message: string): WsMessage => {
     index: id,
   };
 
+  socketsDb.addSocket(ws, newUser.id);
   usersDb.addUser(newUser);
 
   return getRegistrationResponse({

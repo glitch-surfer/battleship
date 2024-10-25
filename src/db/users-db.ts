@@ -6,7 +6,7 @@ export const usersDb = {
   addUser: (user: User) => {
     users[user.id] = user;
   },
-  getUser: (id: number): User | null => {
+  getUser: (id: string): User | null => {
     return users[id] ?? null;
   },
   getUsers: (): User[] => {

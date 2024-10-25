@@ -1,3 +1,5 @@
+import { WebSocket } from 'ws';
+
 export enum WsMessageType {
   REGISTRATION = 'reg',
   UPDATE_WINNERS = 'update_winners',
@@ -13,11 +15,13 @@ export enum WsMessageType {
   FINISH = 'finish',
 }
 
-export interface WsMessage {
+export interface ResponseData {
   type: WsMessageType;
   data: string;
   id: 0;
 }
+
+export type WsMessage = ResponseData | ((ws: WebSocket) => ResponseData);
 
 export interface RegistrationReqData {
   name: string;
