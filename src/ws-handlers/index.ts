@@ -11,6 +11,7 @@ import { socketsDb } from '../db/sockets-db';
 import { addPlayerShips } from './add-ships';
 import { handleStartGame } from './handle-start-game';
 import { handleTurn } from './handle-turn';
+import { handleAttack } from './handle-attack';
 
 export const wsMessageHandler = (data: string, ws: WebSocket) => {
   const { type, data: message } = JSON.parse(data);
@@ -51,6 +52,12 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
           socketsDb.getByUserId(secondPlayerIndex).socket.send(JSON.stringify(response));
         });
       }
+      break;
+
+    case WsMessageType.ATTACK:
+      const { result, nextTurnPlayerId, userIds } = handleAttack(message);
+      messagesToRespond.push(result, handleTurn(nextTurnPlayerId));
+      userIds.forEach(userId => socketsToRespond.add(socketsDb.getByUserId(userId).socket));
       break;
 
     default:

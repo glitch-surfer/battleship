@@ -8,6 +8,7 @@ export const createGame = (userIds: [string, string]): string => {
     id: gameId,
     userIds,
     ships: {},
+    coordinates: {},
   });
 
   return gameId;
