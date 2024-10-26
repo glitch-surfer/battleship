@@ -3,9 +3,10 @@ import { ResponseData, WsMessageType } from '../models/ws-messages';
 import { gameSessionDb } from '../db/game-session-db';
 import { getWsResponse } from '../helpers/get-ws-response';
 import { isShipSunk } from '../helpers/is-ship-sunk';
+import { getEmptySurroundingCells } from '../helpers/get-empty-surrounding-cells';
 
 interface AttackResultInterface {
-  result: ResponseData;
+  result: ResponseData[];
   nextTurnPlayerId: string;
   userIds: [string, string];
   gameId: string;
@@ -25,14 +26,14 @@ export const handleAttack = (message: string): AttackResultInterface | null => {
       gameSessionDb.setCurrentPlayer(gameId, enemyId);
 
       return {
-        result: getWsResponse<AttackRes>(WsMessageType.ATTACK, {
+        result: [getWsResponse<AttackRes>(WsMessageType.ATTACK, {
           status: 'miss',
           position: {
             x,
             y,
           },
           currentPlayer: indexPlayer,
-        }),
+        })],
         nextTurnPlayerId: enemyId,
         userIds: game.userIds,
         gameId,
@@ -42,18 +43,34 @@ export const handleAttack = (message: string): AttackResultInterface | null => {
       gameSessionDb.setCurrentPlayer(gameId, indexPlayer);
       gameSessionDb.setCoordinates(gameId, enemyId, enemyCoordinates.filter((_, index) => index !== result));
 
-      return {
-        result: getWsResponse<AttackRes>(WsMessageType.ATTACK, {
-          status: isShipSunk({ x, y }, enemyCoordinates) ? 'killed' : 'shot',
+      const status = isShipSunk({ x, y }, enemyCoordinates) ? 'killed' : 'shot';
+
+      const response = {
+        result: [getWsResponse<AttackRes>(WsMessageType.ATTACK, {
+          status,
           position: {
             x,
             y,
           },
           currentPlayer: indexPlayer,
-        }),
+        })],
         nextTurnPlayerId: indexPlayer,
         userIds: game.userIds,
         gameId,
       };
+
+      if (status === 'killed') {
+        response.result.push(...getEmptySurroundingCells({ x, y }, enemyCoordinates)
+          .map(({ x, y }) => getWsResponse<AttackRes>(WsMessageType.ATTACK, {
+            status: 'miss',
+            position: {
+              x,
+              y,
+            },
+            currentPlayer: indexPlayer,
+          })));
+      }
+
+      return response;
   }
 };

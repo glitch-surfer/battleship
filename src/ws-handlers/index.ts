@@ -65,7 +65,7 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
       const { result, nextTurnPlayerId, userIds, gameId } = handleAttack(message) ?? {};
       if (!result || !nextTurnPlayerId || !userIds || !gameId) return;
 
-      messagesToRespond.push(result, handleTurn(nextTurnPlayerId, gameId));
+      messagesToRespond.push(...result, handleTurn(nextTurnPlayerId, gameId));
       userIds.forEach(userId => socketsToRespond.add(socketsDb.getByUserId(userId).socket));
       break;
     }
