@@ -4,6 +4,7 @@ import { gameSessionDb } from '../db/game-session-db';
 import { getWsResponse } from '../helpers/get-ws-response';
 import { isShipSunk } from '../helpers/is-ship-sunk';
 import { getEmptySurroundingCells } from '../helpers/get-empty-surrounding-cells';
+import { usersDb } from '../db/users-db';
 
 interface AttackResultInterface {
   result: ResponseData[];
@@ -11,6 +12,7 @@ interface AttackResultInterface {
   userIds: [string, string];
   gameId: string;
   isWin: boolean;
+  winnerName?: string;
 }
 
 export const handleAttack = (message: string): AttackResultInterface | null => {
@@ -60,9 +62,10 @@ export const handleAttack = (message: string): AttackResultInterface | null => {
         userIds: game.userIds,
         gameId,
         isWin: gameSessionDb.isWin(gameId, enemyId),
+        winnerName: usersDb.getUser(indexPlayer)?.name,
       };
 
-      if (status === 'killed') {
+      if (status === 'killed' && !response.isWin) {
         response.result.push(...getEmptySurroundingCells({ x, y }, enemyCoordinates)
           .map(({ x, y }) => getWsResponse<AttackRes>(WsMessageType.ATTACK, {
             status: 'miss',

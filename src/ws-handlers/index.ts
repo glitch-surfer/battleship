@@ -24,8 +24,8 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
   switch (type) {
     case WsMessageType.REGISTRATION: {
       messagesToRespond.push(handleRegistration(message, ws));
-      handleUpdateWinners();
       handleRoomUpdate(ws);
+      handleUpdateWinners();
       break;
     }
 
@@ -63,14 +63,14 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
     }
 
     case WsMessageType.ATTACK: {
-      const { result, nextTurnPlayerId, userIds, gameId, isWin } = handleAttack(message) ?? {};
+      const { result, nextTurnPlayerId, userIds, gameId, isWin, winnerName } = handleAttack(message) ?? {};
       if (!result || !nextTurnPlayerId || !userIds || !gameId) return;
 
       userIds.forEach(userId => socketsToRespond.add(socketsDb.getByUserId(userId).socket));
 
       if (isWin) {
         messagesToRespond.push(handleFinish(ws));
-        handleUpdateWinners();
+        handleUpdateWinners(winnerName);
         break;
       }
 
