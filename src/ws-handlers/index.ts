@@ -10,6 +10,7 @@ import { createGame } from './create-game';
 import { socketsDb } from '../db/sockets-db';
 import { addPlayerShips } from './add-ships';
 import { handleStartGame } from './handle-start-game';
+import { handleTurn } from './handle-turn';
 
 export const wsMessageHandler = (data: string, ws: WebSocket) => {
   const { type, data: message } = JSON.parse(data);
@@ -43,10 +44,12 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
       const { shouldStartGame, gameShips, currentPlayerIndex } = addPlayerShips(message);
 
       if (shouldStartGame) {
-        messagesToRespond.push(handleStartGame(gameShips[currentPlayerIndex], currentPlayerIndex));
+        messagesToRespond.push(handleStartGame(gameShips[currentPlayerIndex], currentPlayerIndex), handleTurn(currentPlayerIndex));
         delete gameShips[currentPlayerIndex];
         const [secondPlayerIndex, secondPlayerShips] = Object.entries(gameShips)[0];
-        socketsDb.getByUserId(secondPlayerIndex).socket.send(JSON.stringify(handleStartGame(secondPlayerShips, secondPlayerIndex)));
+        [handleStartGame(secondPlayerShips, secondPlayerIndex), handleTurn(currentPlayerIndex)].forEach(response => {
+          socketsDb.getByUserId(secondPlayerIndex).socket.send(JSON.stringify(response));
+        });
       }
       break;
 
