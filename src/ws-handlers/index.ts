@@ -22,18 +22,21 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
 
   switch (type) {
     case WsMessageType.REGISTRATION: {
-      messagesToRespond.push(handleRegistration(message, ws), handleRoomUpdate(ws), handleUpdateWinners());
+      messagesToRespond.push(handleRegistration(message, ws));
+      handleUpdateWinners();
+      handleRoomUpdate(ws)
       break;
     }
 
     case WsMessageType.CREATE_ROOM: {
-      messagesToRespond.push(handleRoomCreation(), handleRoomUpdate(ws));
+      messagesToRespond.push(handleRoomCreation());
+      handleRoomUpdate(ws)
       break;
     }
 
     case WsMessageType.ADD_USER_TO_ROOM: {
       const room = handleAddUserToRoom(message, ws);
-      messagesToRespond.push(handleRoomUpdate(ws));
+      handleRoomUpdate(ws);
 
       const shouldCreateGame = room.roomUsers.length === 2;
       if (shouldCreateGame) {

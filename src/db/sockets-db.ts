@@ -17,5 +17,8 @@ export const socketsDb = {
   getSocketData: (socket: WebSocket): SocketMetaData => sockets.get(socket)!,
   getByUserId: (userId: string) => {
     return Array.from(sockets.values()).find(socket => socket.userId === userId)!;
+  },
+  getAll: (): WebSocket[] => {
+    return Array.from(sockets.keys());
   }
 };

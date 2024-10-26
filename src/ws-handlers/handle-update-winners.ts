@@ -1,10 +1,11 @@
 import { winnersDb } from '../db/winners-db';
-import { WsMessage, WsMessageType } from '../models/ws-messages';
+import { WsMessageType } from '../models/ws-messages';
 import { getWsResponse } from '../helpers/get-ws-response';
 import { Winner } from '../models/winner';
+import { socketsDb } from '../db/sockets-db';
 
-export const handleUpdateWinners = (name?: string): WsMessage => {
+export const handleUpdateWinners = (name?: string) => {
   if (name) winnersDb.addWinner(name);
 
-  return getWsResponse<Winner[]>(WsMessageType.UPDATE_WINNERS, winnersDb.getWinners());
-}
+  socketsDb.getAll().forEach(socket => socket.send(JSON.stringify(getWsResponse<Winner[]>(WsMessageType.UPDATE_WINNERS, winnersDb.getWinners()))));
+};
