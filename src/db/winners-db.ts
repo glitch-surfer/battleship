@@ -9,5 +9,5 @@ export const winnersDb = {
       winners.push({ name, wins: 0 });
     } else winners[winnerIndex].wins++;
   },
-  getWinners: () => winners,
+  getWinners: () => winners.slice(),
 };

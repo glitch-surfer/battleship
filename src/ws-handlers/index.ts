@@ -8,8 +8,8 @@ import { handleCreateGame } from './handle-create-game';
 import { WebSocket } from 'ws';
 import { createGame } from './create-game';
 import { socketsDb } from '../db/sockets-db';
-import { usersDb } from '../db/users-db';
-
+import { addPlayerShips } from './add-ships';
+import { handleStartGame } from './handle-start-game';
 
 export const wsMessageHandler = (data: string, ws: WebSocket) => {
   const { type, data: message } = JSON.parse(data);
@@ -31,11 +31,22 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
       const room = handleAddUserToRoom(message, ws);
       messagesToRespond.push(handleRoomUpdate(ws));
 
-      const shouldStartGame = room.roomUsers.length === 2;
-      if (shouldStartGame) {
+      const shouldCreateGame = room.roomUsers.length === 2;
+      if (shouldCreateGame) {
         const gameId = createGame(room.roomUsers.map(user => user.index) as [string, string]);
         messagesToRespond.push((ws: WebSocket) => handleCreateGame(gameId, ws));
         room.roomUsers.forEach(user => socketsToRespond.add(socketsDb.getByUserId(user.index).socket));
+      }
+      break;
+
+    case WsMessageType.ADD_SHIPS:
+      const { shouldStartGame, gameShips, currentPlayerIndex } = addPlayerShips(message);
+
+      if (shouldStartGame) {
+        messagesToRespond.push(handleStartGame(gameShips[currentPlayerIndex], currentPlayerIndex));
+        delete gameShips[currentPlayerIndex];
+        const [secondPlayerIndex, secondPlayerShips] = Object.entries(gameShips)[0];
+        socketsDb.getByUserId(secondPlayerIndex).socket.send(JSON.stringify(handleStartGame(secondPlayerShips, secondPlayerIndex)));
       }
       break;
 

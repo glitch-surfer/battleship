@@ -1,13 +1,10 @@
-interface Game {
-  id: string;
-  userIds: [string, string];
-}
+import { Game } from '../models/game';
 
 const gameSession: Record<string, Game> = {};
 
 export const gameSessionDb = {
-  getGame: (id: string): Game | undefined => gameSession[id],
+  getGame: (id: string): Game | undefined => ({ ...gameSession[id] }),
   addGame: (game: Game) => {
-    gameSession[game.id] = game;
+    gameSession[game.id] = { ...game };
   },
 };

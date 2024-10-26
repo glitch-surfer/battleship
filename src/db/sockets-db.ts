@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws';
 
-interface SocketMetaData {
+export interface SocketMetaData {
   userId: string;
   socket: WebSocket;
 }

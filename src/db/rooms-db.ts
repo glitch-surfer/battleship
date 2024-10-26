@@ -11,6 +11,6 @@ export const roomsDb = {
     if (!room) throw new Error('Room not found');
 
     room.roomUsers.push({ name, index });
-    return room;
+    return { ...room };
   },
 };

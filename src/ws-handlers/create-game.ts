@@ -7,6 +7,7 @@ export const createGame = (userIds: [string, string]): string => {
   gameSessionDb.addGame({
     id: gameId,
     userIds,
+    ships: {},
   });
 
   return gameId;
