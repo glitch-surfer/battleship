@@ -35,3 +35,7 @@ export interface AttackRes {
   position: Position;
   currentPlayer: string;
 }
+
+export interface WinRes {
+  winPlayer: string;
+}

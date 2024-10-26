@@ -12,6 +12,7 @@ import { addPlayerShips } from './add-ships';
 import { handleStartGame } from './handle-start-game';
 import { handleTurn } from './handle-turn';
 import { handleAttack } from './handle-attack';
+import { handleFinish } from './handle-finish';
 
 export const wsMessageHandler = (data: string, ws: WebSocket) => {
   const { type, data: message } = JSON.parse(data);
@@ -24,13 +25,13 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
     case WsMessageType.REGISTRATION: {
       messagesToRespond.push(handleRegistration(message, ws));
       handleUpdateWinners();
-      handleRoomUpdate(ws)
+      handleRoomUpdate(ws);
       break;
     }
 
     case WsMessageType.CREATE_ROOM: {
       messagesToRespond.push(handleRoomCreation(ws));
-      handleRoomUpdate(ws)
+      handleRoomUpdate(ws);
       break;
     }
 
@@ -62,11 +63,18 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
     }
 
     case WsMessageType.ATTACK: {
-      const { result, nextTurnPlayerId, userIds, gameId } = handleAttack(message) ?? {};
+      const { result, nextTurnPlayerId, userIds, gameId, isWin } = handleAttack(message) ?? {};
       if (!result || !nextTurnPlayerId || !userIds || !gameId) return;
 
-      messagesToRespond.push(...result, handleTurn(nextTurnPlayerId, gameId));
       userIds.forEach(userId => socketsToRespond.add(socketsDb.getByUserId(userId).socket));
+
+      if (isWin) {
+        messagesToRespond.push(handleFinish(ws));
+        handleUpdateWinners();
+        break;
+      }
+
+      messagesToRespond.push(...result, handleTurn(nextTurnPlayerId, gameId));
       break;
     }
 

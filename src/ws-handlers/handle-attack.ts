@@ -10,6 +10,7 @@ interface AttackResultInterface {
   nextTurnPlayerId: string;
   userIds: [string, string];
   gameId: string;
+  isWin: boolean;
 }
 
 export const handleAttack = (message: string): AttackResultInterface | null => {
@@ -37,6 +38,7 @@ export const handleAttack = (message: string): AttackResultInterface | null => {
         nextTurnPlayerId: enemyId,
         userIds: game.userIds,
         gameId,
+        isWin: false,
       };
 
     default:
@@ -57,6 +59,7 @@ export const handleAttack = (message: string): AttackResultInterface | null => {
         nextTurnPlayerId: indexPlayer,
         userIds: game.userIds,
         gameId,
+        isWin: gameSessionDb.isWin(gameId, enemyId),
       };
 
       if (status === 'killed') {
