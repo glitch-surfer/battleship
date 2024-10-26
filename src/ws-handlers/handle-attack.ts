@@ -2,6 +2,7 @@ import { AttackReq, AttackRes } from '../models/game';
 import { ResponseData, WsMessageType } from '../models/ws-messages';
 import { gameSessionDb } from '../db/game-session-db';
 import { getWsResponse } from '../helpers/get-ws-response';
+import { isShipSunk } from '../helpers/is-ship-sunk';
 
 interface AttackResultInterface {
   result: ResponseData;
@@ -43,7 +44,7 @@ export const handleAttack = (message: string): AttackResultInterface | null => {
 
       return {
         result: getWsResponse<AttackRes>(WsMessageType.ATTACK, {
-          status: 'shot',
+          status: isShipSunk({ x, y }, enemyCoordinates) ? 'killed' : 'shot',
           position: {
             x,
             y,
