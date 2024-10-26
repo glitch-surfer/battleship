@@ -29,7 +29,7 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
     }
 
     case WsMessageType.CREATE_ROOM: {
-      messagesToRespond.push(handleRoomCreation());
+      messagesToRespond.push(handleRoomCreation(ws));
       handleRoomUpdate(ws)
       break;
     }
