@@ -9,6 +9,8 @@ export const createGame = (userIds: [string, string]): string => {
     userIds,
     ships: {},
     coordinates: {},
+    isFinished: false,
+    currentPlayer: '',
   });
 
   return gameId;

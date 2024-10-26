@@ -21,15 +21,17 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
   console.log(`Received message type: ${type} with data: ${message}`);
 
   switch (type) {
-    case WsMessageType.REGISTRATION:
+    case WsMessageType.REGISTRATION: {
       messagesToRespond.push(handleRegistration(message, ws), handleRoomUpdate(ws), handleUpdateWinners());
       break;
+    }
 
-    case WsMessageType.CREATE_ROOM:
+    case WsMessageType.CREATE_ROOM: {
       messagesToRespond.push(handleRoomCreation(), handleRoomUpdate(ws));
       break;
+    }
 
-    case WsMessageType.ADD_USER_TO_ROOM:
+    case WsMessageType.ADD_USER_TO_ROOM: {
       const room = handleAddUserToRoom(message, ws);
       messagesToRespond.push(handleRoomUpdate(ws));
 
@@ -40,25 +42,30 @@ export const wsMessageHandler = (data: string, ws: WebSocket) => {
         room.roomUsers.forEach(user => socketsToRespond.add(socketsDb.getByUserId(user.index).socket));
       }
       break;
+    }
 
-    case WsMessageType.ADD_SHIPS:
-      const { shouldStartGame, gameShips, currentPlayerIndex } = addPlayerShips(message);
+    case WsMessageType.ADD_SHIPS: {
+      const { shouldStartGame, gameShips, currentPlayerIndex, gameId } = addPlayerShips(message);
 
       if (shouldStartGame) {
-        messagesToRespond.push(handleStartGame(gameShips[currentPlayerIndex], currentPlayerIndex), handleTurn(currentPlayerIndex));
+        messagesToRespond.push(handleStartGame(gameShips[currentPlayerIndex], currentPlayerIndex), handleTurn(currentPlayerIndex, gameId));
         delete gameShips[currentPlayerIndex];
         const [secondPlayerIndex, secondPlayerShips] = Object.entries(gameShips)[0];
-        [handleStartGame(secondPlayerShips, secondPlayerIndex), handleTurn(currentPlayerIndex)].forEach(response => {
+        [handleStartGame(secondPlayerShips, secondPlayerIndex), handleTurn(currentPlayerIndex, gameId)].forEach(response => {
           socketsDb.getByUserId(secondPlayerIndex).socket.send(JSON.stringify(response));
         });
       }
       break;
+    }
 
-    case WsMessageType.ATTACK:
-      const { result, nextTurnPlayerId, userIds } = handleAttack(message);
-      messagesToRespond.push(result, handleTurn(nextTurnPlayerId));
+    case WsMessageType.ATTACK: {
+      const { result, nextTurnPlayerId, userIds, gameId } = handleAttack(message) ?? {};
+      if (!result || !nextTurnPlayerId || !userIds || !gameId) return;
+
+      messagesToRespond.push(result, handleTurn(nextTurnPlayerId, gameId));
       userIds.forEach(userId => socketsToRespond.add(socketsDb.getByUserId(userId).socket));
       break;
+    }
 
     default:
       console.log(`Unknown message type: ${type}`);

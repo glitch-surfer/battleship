@@ -6,6 +6,7 @@ export const addPlayerShips = (message: string): {
   shouldStartGame: boolean,
   gameShips: Record<string, Ship[]>,
   currentPlayerIndex: string
+  gameId: string
 } => {
   const { gameId, ships, indexPlayer } = JSON.parse(message);
   const game = gameSessionDb.getGame(gameId);
@@ -18,5 +19,6 @@ export const addPlayerShips = (message: string): {
     shouldStartGame: Object.keys(game.ships).length === 2,
     currentPlayerIndex: indexPlayer,
     gameShips: game.ships,
+    gameId,
   };
 };

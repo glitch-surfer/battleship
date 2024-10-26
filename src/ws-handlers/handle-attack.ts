@@ -7,18 +7,22 @@ interface AttackResultInterface {
   result: ResponseData;
   nextTurnPlayerId: string;
   userIds: [string, string];
+  gameId: string;
 }
 
-export const handleAttack = (message: string): AttackResultInterface => {
+export const handleAttack = (message: string): AttackResultInterface | null => {
   const { gameId, x, y, indexPlayer } = JSON.parse(message) as AttackReq;
   const game = gameSessionDb.getGame(gameId);
   if (!game) throw new Error('Game not found');
+  if (indexPlayer !== game.currentPlayer) return null;
 
   const [enemyId, enemyCoordinates] = Object.entries(game.coordinates).filter(([playerId]) => playerId !== indexPlayer)[0];
   const result = enemyCoordinates.findIndex(coordinate => coordinate.x === x && coordinate.y === y);
 
   switch (result) {
     case -1:
+      gameSessionDb.setCurrentPlayer(gameId, enemyId);
+
       return {
         result: getWsResponse<AttackRes>(WsMessageType.ATTACK, {
           status: 'miss',
@@ -30,16 +34,12 @@ export const handleAttack = (message: string): AttackResultInterface => {
         }),
         nextTurnPlayerId: enemyId,
         userIds: game.userIds,
+        gameId,
       };
 
     default:
-      gameSessionDb.addGame({
-        ...game,
-        coordinates: {
-          ...game.coordinates,
-          [enemyId]: enemyCoordinates.filter((_, index) => index !== result),
-        },
-      });
+      gameSessionDb.setCurrentPlayer(gameId, indexPlayer);
+      gameSessionDb.setCoordinates(gameId, enemyId, enemyCoordinates.filter((_, index) => index !== result));
 
       return {
         result: getWsResponse<AttackRes>(WsMessageType.ATTACK, {
@@ -52,6 +52,7 @@ export const handleAttack = (message: string): AttackResultInterface => {
         }),
         nextTurnPlayerId: indexPlayer,
         userIds: game.userIds,
+        gameId,
       };
   }
 };

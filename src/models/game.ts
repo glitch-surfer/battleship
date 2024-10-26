@@ -19,6 +19,8 @@ export interface Game {
   coordinates: {
     [key: string]: Position[]
   };
+  currentPlayer: string;
+  isFinished: boolean;
 }
 
 export interface AttackReq {
